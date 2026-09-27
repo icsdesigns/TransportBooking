@@ -124,7 +124,7 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spa
 .sort{display:flex;align-items:center;gap:8px}
 .sort select{font-family:var(--body);font-size:14px;font-weight:500;padding:6px 30px 6px 10px;width:auto}
 .trips{display:grid;gap:6px}
-.trip{display:grid;grid-template-columns:6px 150px minmax(0,1fr) minmax(170px,1fr) 90px 140px;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px 12px 0;overflow:hidden;transition:transform .15s ease,box-shadow .15s ease}
+.trip{display:grid;grid-template-columns:6px 150px minmax(0,1fr) minmax(170px,1fr) 90px minmax(150px,max-content);align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px 12px 0;overflow:hidden;transition:transform .15s ease,box-shadow .15s ease}
 .trip:hover{box-shadow:0 6px 18px -10px rgba(20,30,45,.35)}
 .trip.flash{box-shadow:0 0 0 2px var(--focus)}
 .trip .stripe{align-self:stretch;margin:-10px 0}
@@ -147,6 +147,11 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spa
 .bar span{display:block;height:100%}
 .occ .t{font-size:12px;color:var(--muted)}
 .price{font-family:var(--display);font-size:22px;font-weight:600;text-align:right}
+.act{display:grid;justify-items:end;gap:6px}
+.book{display:inline-flex;align-items:center;gap:5px;border:1.5px solid currentColor;background:var(--surface);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none;transition:background .15s ease}
+.trip.renfe .book{color:var(--renfe)} .trip.monbus .book{color:var(--monbus)}
+.trip.renfe .book:hover{background:var(--renfe-soft)} .trip.monbus .book:hover{background:var(--monbus-soft)}
+.book svg{width:12px;height:12px;flex:none}
 .pill{justify-self:end;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap}
 .pill.ok{color:var(--ok);background:var(--ok-soft)}
 .pill.warn{color:var(--warn);background:var(--warn-soft)}
@@ -239,8 +244,9 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spa
 .foot code{font-size:12px;background:var(--surface-2);border:1px solid var(--line);padding:1px 5px;border-radius:4px}
 
 @media (max-width:820px){
-  .trip{grid-template-columns:6px 1fr auto;grid-template-areas:"s t p" "s v pill" "s o o";row-gap:6px}
-  .trip .stripe{grid-area:s} .times{grid-area:t} .svc{grid-area:v} .occ{grid-area:o} .price{grid-area:p} .pill{grid-area:pill}
+  .trip{grid-template-columns:6px 1fr auto;grid-template-areas:"s t p" "s v v" "s o o" "s pill pill";row-gap:8px}
+  .act{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px}
+  .trip .stripe{grid-area:s} .times{grid-area:t} .svc{grid-area:v} .occ{grid-area:o} .price{grid-area:p} .act{grid-area:pill}
 }
 @media (max-width:640px){
   .cmp{grid-template-columns:1fr}
@@ -525,7 +531,7 @@ function renderList(list){
       <div class="occ"><div class="bar" role="img" aria-label="${t.occupied} de ${t.capacity} plazas ocupadas"><span style="width:${(r*100).toFixed(1)}%;background:${col}"></span></div>
         <span class="t num">${t.occupied} ocupadas · ${free} libres de ${t.capacity}</span></div>
       <div class="price num">${eur(t.price)}</div>
-      ${action}
+      <div class="act">${action}<a class="book" href="${BOOK_URL[t.operator]}" target="_blank" rel="noopener" data-book="${t.id}" aria-label="Reservar en ${OPN[t.operator]}: ${t.dep}, ${t.fromStation} a ${t.toStation}">Reservar${EXT}</a></div>
     </article>`}).join("");
 }
 
@@ -706,6 +712,23 @@ async function checkWatches(){
   if(changed){ saveWatches(); renderAlerts(); renderDay(); }
 }
 
+/* ============================================================
+   RESERVA EN LA WEB OFICIAL
+   Renfe y Monbus no publican enlaces estables que lleguen a un tren o
+   bus concreto, así que se abre su buscador oficial y se copian los
+   datos del viaje para pegarlos o tenerlos a mano.
+   ============================================================ */
+const BOOK_URL={renfe:"https://www.renfe.com/es/es", monbus:"https://www.monbus.es/es"};
+const EXT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+$("trips").addEventListener("click",async e=>{
+  const a=e.target.closest("[data-book]"); if(!a) return;
+  const list=byStation(await DataSource.getDepartures(state.from,state.to,state.date));
+  const t=list.find(x=>x.id===a.dataset.book); if(!t) return;
+  const d=new Date(state.date+"T12:00:00"), fecha=`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+  const txt=`${OPN[t.operator]} ${t.service} · ${state.from} → ${state.to} · ${fecha} · salida ${t.dep} (${t.fromStation} → ${t.toStation})`;
+  let copied=false; try{ await navigator.clipboard.writeText(txt); copied=true; }catch(_){}
+  toast(`Abriendo ${OPN[t.operator]}`,`Busca ${state.from} → ${state.to} el ${fecha} y elige la salida de las ${t.dep}.${copied?" Datos copiados al portapapeles.":""}`);
+});
 $("trips").addEventListener("click",async e=>{
   const b=e.target.closest("[data-watch]"); if(!b) return;
   const list=byStation(await DataSource.getDepartures(state.from,state.to,state.date));
@@ -785,7 +808,7 @@ const GUIDE=[
    p:"El calendario muestra el porcentaje de plazas ocupadas de cada día en tren y en bus. <strong>Verde</strong> es que hay mucho sitio y <strong>rojo</strong>, que está casi lleno. Toca un día para ver sus salidas.",
    v:`<div class="v-cal"><div style="background:#CFEBD9">45%<small>sáb</small></div><div style="background:#F4C9A0">86%<small>dom</small></div><div style="background:#CFEBD9">52%<small>lun</small></div><div style="background:#E3EDC4">61%<small>mar</small></div><div style="background:#F3DFA8">74%<small>vie</small></div></div>`},
   {h:"3. Elige la salida que te encaje",
-   p:"«El día de un vistazo» dibuja cada salida en una línea de tiempo. Debajo tienes la lista con horario, duración, precio y plazas libres, ordenable por hora, precio o duración. Las etiquetas <strong>Más barato</strong> y <strong>Más rápido</strong> te ahorran buscar.",
+   p:"«El día de un vistazo» dibuja cada salida en una línea de tiempo. Debajo tienes la lista con horario, duración, precio y plazas libres, ordenable por hora, precio o duración. Las etiquetas <strong>Más barato</strong> y <strong>Más rápido</strong> te ahorran buscar. Con <strong>«Reservar»</strong> vas a la web oficial de Renfe o Monbus con los datos del viaje copiados.",
    v:`<div class="v-tl"><div><i style="left:6%;width:22%;background:var(--ok)"></i><i style="left:40%;width:22%;background:var(--warn)"></i><i style="left:72%;width:22%;background:var(--full)"></i></div><div><i style="left:14%;width:34%;background:var(--ok)"></i><i style="left:56%;width:34%;background:var(--ok)"></i></div></div>`},
   {h:"4. Filtra a tu medida",
    p:"Quédate solo con el tren o solo con el bus, con salidas con plazas o completas, y con las <strong>estaciones</strong> que te vengan mejor, como Chamartín, Estación Sur o Moncloa.",
