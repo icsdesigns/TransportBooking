@@ -161,6 +161,50 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spa
 .alerts .cal-head{margin-bottom:12px}
 .al-sub{font-size:13px;color:var(--muted)}
 .top-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.help{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;font-weight:600;font-size:13px;cursor:pointer}
+.help:hover{border-color:var(--muted)}
+/* Guía de primer uso */
+.guide{border:0;padding:0;width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 32px);border-radius:20px;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5);overflow:auto}
+.guide::backdrop{background:rgba(14,19,25,.55)}
+.g-in{display:grid;gap:16px;padding:22px 22px 18px}
+.g-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.g-step{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.g-skip{border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;padding:4px}
+.g-skip:hover{color:var(--ink)}
+.g-vis{height:120px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;padding:12px}
+.g-h{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.1;margin:0;text-wrap:balance}
+.g-p{margin:0;color:var(--muted);font-size:15px;line-height:1.5}
+.g-p strong{color:var(--ink)}
+.g-nav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.g-btns{margin-left:auto}
+.g-dots{display:flex;gap:6px}
+.g-dots i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:width .2s ease,background .2s ease}
+.g-dots i.on{width:22px;border-radius:4px;background:var(--ink)}
+.g-btns{display:flex;gap:8px}
+.g-prev{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:9px 14px;font-weight:600;cursor:pointer}
+.g-next{border:0;background:var(--ink);color:var(--surface);border-radius:10px;padding:9px 18px;font-weight:600;cursor:pointer}
+/* mini ilustraciones */
+.v-rail{position:relative;width:100%;max-width:300px;height:40px}
+.v-rail::before{content:"";position:absolute;left:8px;right:8px;top:12px;height:4px;border-radius:2px;background:var(--renfe)}
+.v-rail span{position:absolute;top:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:3px solid var(--renfe);transform:translateX(-50%);display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--surface)}
+.v-rail span.e{background:var(--ink);border-color:var(--ink)}
+.v-rail b{position:absolute;top:30px;font-size:11px;font-weight:600;transform:translateX(-50%);white-space:nowrap}
+.v-cal{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;max-width:300px}
+.v-cal div{border-radius:8px;padding:6px 4px;text-align:center;font-family:var(--display);font-weight:600;font-size:16px;color:#15202B}
+.v-cal div small{display:block;font-family:var(--body);font-size:10px;font-weight:500;opacity:.7}
+.v-tl{display:grid;gap:8px;width:100%;max-width:300px}
+.v-tl div{position:relative;height:20px}
+.v-tl i{position:absolute;height:20px;border-radius:6px}
+.v-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:320px}
+.v-chips span{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:500}
+.v-chips span.on{border-color:var(--ink)}
+.v-chips i{width:8px;height:8px;border-radius:50%}
+.v-alert{display:grid;justify-items:center;gap:10px}
+.v-alert .w{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--full);color:var(--full);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700}
+.v-alert .w svg{width:15px;height:15px}
+.v-alert .n{background:var(--ink);color:var(--surface);border-radius:12px;padding:8px 12px;font-size:12px;display:grid;gap:2px;max-width:260px}
+.v-alert .n b{font-size:13px}
+@media (prefers-reduced-motion:no-preference){ .guide[open]{animation:gIn .22s ease} @keyframes gIn{from{opacity:0;transform:translateY(12px)}} }
 .install{border:0;background:var(--ink);color:var(--surface);border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;cursor:pointer}
 .notif{font-size:13px;color:var(--muted);margin:-4px 0 12px;display:block}
 .notif .ok{color:var(--ok);font-weight:600}
@@ -270,12 +314,23 @@ h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0;letter-spa
 </head>
 <body>
 <div class="wrap">
+  <dialog class="guide" id="guide" aria-labelledby="gH">
+    <div class="g-in">
+      <div class="g-top"><span class="g-step" id="gStep"></span><button type="button" class="g-skip" id="gSkip">Saltar guía</button></div>
+      <div class="g-vis" id="gVis" aria-hidden="true"></div>
+      <h2 class="g-h" id="gH"></h2>
+      <p class="g-p" id="gP"></p>
+      <div class="g-nav"><div class="g-dots" id="gDots"></div><div class="g-btns"><button type="button" class="g-prev" id="gPrev">Atrás</button><button type="button" class="g-next" id="gNext">Siguiente</button></div></div>
+    </div>
+  </dialog>
+
   <header class="top">
     <div>
       <h1><span class="t">Tren</span> o <span class="b">bus</span> Salamanca–Madrid</h1>
       <p class="sub">Compara Renfe y Monbus entre Salamanca y Madrid o entre cualquier par de paradas intermedias. Elige un día en el calendario para ver cada salida con sus plazas ocupadas y libres.</p>
     </div>
     <div class="top-act">
+      <button type="button" class="help" id="helpBtn" aria-label="Cómo se usa">? Ayuda</button>
       <button type="button" class="install" id="installBtn" hidden>Instalar app</button>
       <span class="demo" title="Los horarios y la ocupación son de ejemplo">Datos de ejemplo</span>
     </div>
@@ -714,6 +769,50 @@ if("serviceWorker" in navigator && location.protocol!=="file:"){
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkWatches(); });
 // Al tocar una notificación se abre la app en esa salida (?aviso=...)
 const avisoParam=new URLSearchParams(location.search).get("aviso");
+
+/* ============================================================
+   GUÍA DE PRIMER USO
+   Se abre sola la primera vez; después, con el botón «Ayuda».
+   ============================================================ */
+const GUIDE=[
+  {h:"Compara tren y bus de un vistazo",
+   p:"Aquí ves todas las salidas de <strong>Renfe</strong> (tren) y <strong>Monbus</strong> (bus) entre Salamanca y Madrid, con las plazas ocupadas y libres de cada una.",
+   v:`<div class="v-tl"><div><i style="left:4%;width:30%;background:var(--renfe)"></i><i style="left:52%;width:26%;background:var(--renfe)"></i></div><div><i style="left:12%;width:40%;background:var(--monbus)"></i><i style="left:62%;width:34%;background:var(--monbus)"></i></div></div>`},
+  {h:"1. Elige tu trayecto",
+   p:"Toca una parada del mapa para marcar el <strong>origen (A)</strong> y otra para el <strong>destino (B)</strong>. También puedes usar los desplegables. Sirve cualquier parada intermedia, en los dos sentidos.",
+   v:`<div class="v-rail"><span class="e" style="left:6%">A</span><span style="left:36%"></span><span style="left:66%"></span><span class="e" style="left:94%">B</span><b style="left:0;transform:none">Salamanca</b><b style="left:auto;right:0;transform:none">Madrid</b></div>`},
+  {h:"2. Mira qué días hay sitio",
+   p:"El calendario muestra el porcentaje de plazas ocupadas de cada día en tren y en bus. <strong>Verde</strong> es que hay mucho sitio y <strong>rojo</strong>, que está casi lleno. Toca un día para ver sus salidas.",
+   v:`<div class="v-cal"><div style="background:#CFEBD9">45%<small>sáb</small></div><div style="background:#F4C9A0">86%<small>dom</small></div><div style="background:#CFEBD9">52%<small>lun</small></div><div style="background:#E3EDC4">61%<small>mar</small></div><div style="background:#F3DFA8">74%<small>vie</small></div></div>`},
+  {h:"3. Elige la salida que te encaje",
+   p:"«El día de un vistazo» dibuja cada salida en una línea de tiempo. Debajo tienes la lista con horario, duración, precio y plazas libres, ordenable por hora, precio o duración. Las etiquetas <strong>Más barato</strong> y <strong>Más rápido</strong> te ahorran buscar.",
+   v:`<div class="v-tl"><div><i style="left:6%;width:22%;background:var(--ok)"></i><i style="left:40%;width:22%;background:var(--warn)"></i><i style="left:72%;width:22%;background:var(--full)"></i></div><div><i style="left:14%;width:34%;background:var(--ok)"></i><i style="left:56%;width:34%;background:var(--ok)"></i></div></div>`},
+  {h:"4. Filtra a tu medida",
+   p:"Quédate solo con el tren o solo con el bus, con salidas con plazas o completas, y con las <strong>estaciones</strong> que te vengan mejor, como Chamartín, Estación Sur o Moncloa.",
+   v:`<div class="v-chips"><span class="on"><i style="background:var(--renfe)"></i>Madrid-Chamartín</span><span class="on"><i style="background:var(--monbus)"></i>Estación Sur</span><span><i style="background:var(--monbus)"></i>Moncloa</span></div>`},
+  {h:"5. Te avisamos si se libera una plaza",
+   p:"¿Tu tren o bus está completo? Pulsa <strong>«Avísame»</strong> y acepta las notificaciones. Si alguien cancela, te llega un aviso al móvil. Consejo: instala la app desde el botón «Instalar app» o el menú del navegador.",
+   v:`<div class="v-alert"><span class="w">${BELL}Completo · Avísame</span><div class="n"><b>Plaza libre: Renfe 06:40</b>Salamanca → Madrid. Queda 1 plaza.</div></div>`},
+];
+let gi=0;
+function renderGuide(){
+  const g=GUIDE[gi], last=gi===GUIDE.length-1;
+  $("gStep").textContent=gi===0?"Bienvenida":`Paso ${gi} de ${GUIDE.length-1}`;
+  $("gVis").innerHTML=g.v; $("gH").textContent=g.h; $("gP").innerHTML=g.p;
+  $("gDots").innerHTML=GUIDE.map((_,i)=>`<i class="${i===gi?"on":""}"></i>`).join("");
+  $("gPrev").hidden=gi===0; $("gNext").textContent=gi===0?"Empezar":last?"Entendido":"Siguiente";
+  $("gSkip").hidden=last;
+}
+function openGuide(){ gi=0; renderGuide(); try{ $("guide").showModal(); }catch(e){ $("guide").setAttribute("open",""); } $("gNext").focus(); }
+function closeGuide(){ try{ localStorage.setItem("tb3:guide","1"); }catch(e){} $("guide").close ? $("guide").close() : $("guide").removeAttribute("open"); }
+$("gNext").addEventListener("click",()=>{ if(gi===GUIDE.length-1) return closeGuide(); gi++; renderGuide(); });
+$("gPrev").addEventListener("click",()=>{ if(gi>0){ gi--; renderGuide(); } });
+$("gSkip").addEventListener("click",closeGuide);
+$("guide").addEventListener("cancel",()=>{ try{ localStorage.setItem("tb3:guide","1"); }catch(e){} });
+$("guide").addEventListener("keydown",e=>{ if(e.key==="ArrowRight") $("gNext").click(); if(e.key==="ArrowLeft") $("gPrev").click(); });
+$("helpBtn").addEventListener("click",openGuide);
+let seenGuide=false; try{ seenGuide=localStorage.getItem("tb3:guide")==="1"; }catch(e){}
+if(!seenGuide && !new URLSearchParams(location.search).get("aviso")) openGuide();
 
 renderAlerts();
 renderAll().then(async()=>{

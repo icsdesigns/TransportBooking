@@ -2,7 +2,7 @@
    - Guarda la app en caché para abrirla sin conexión.
    - Muestra las notificaciones (en Android es obligatorio hacerlo desde aquí).
    - Revisa los avisos en segundo plano (periodicsync) y acepta mensajes push de un servidor. */
-const VERSION="tb-v1";
+const VERSION="tb-v2";
 const APP=["./","index.html","data.js","manifest.webmanifest","icons/icon.svg","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/badge-96.png"];
 importScripts("data.js");
 
