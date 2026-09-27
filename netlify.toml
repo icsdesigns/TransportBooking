@@ -1,0 +1,14 @@
+# Publicación en Netlify: la app es estática y se sirve tal cual desde la raíz.
+[build]
+  publish = "."
+
+# El service worker no debe quedarse en caché, para que las actualizaciones lleguen al móvil.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
